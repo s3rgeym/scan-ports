@@ -18,6 +18,8 @@ import (
 var topPorts = []int{
 	21,    // FTP
 	22,    // SSH
+	2022,  // SSH
+	10022, // SSH
 	23,    // Telnet
 	25,    // SMTP
 	26,    // SMTP
@@ -28,11 +30,15 @@ var topPorts = []int{
 	8443,  // HTTPS Proxy
 	1080,  // SOCKS Proxy
 	3306,  // MySQL
+	3307,  // MySQL
 	33060, // MySQL (Docker)
 	5432,  // PostgreSQL
+	5433,  // PostgreSQL
 	54320, // PostgreSQL (Docker)
 	6379,  // Redis
+	63790, // Redis (Docker)
 	6380,  // Redis (TLS/SSL)
+	63800, // Redis (TLS/SSL, Docker)
 	5672,  // RabbitMQ
 	27017, // MongoDB
 	27018, // MongoDB

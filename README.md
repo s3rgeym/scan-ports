@@ -14,8 +14,6 @@ example.com 22 (ssh)
 example.com 25 (smtp)
 example.com 80 (http)
 example.com 443 (https)
-example.com 2222 (EtherNet-IP-1)
-example.com 9081 (cisco-aqos)
 
 ~/workspace/scan-ports   7s
 ❯

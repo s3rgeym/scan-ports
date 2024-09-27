@@ -25,3 +25,5 @@ example.com 9081 (cisco-aqos)
 ~/workspace/scan-ports   7s
 ❯
 ```
+
+* [Download binaries](../../releases)

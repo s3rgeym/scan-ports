@@ -18,7 +18,7 @@ import (
 var topPorts = []int{
 	21,    // FTP
 	22,    // SSH
-	2022,  // SSH
+	2222,  // SSH
 	10022, // SSH
 	23,    // Telnet
 	25,    // SMTP
@@ -38,7 +38,6 @@ var topPorts = []int{
 	6379,  // Redis
 	63790, // Redis (Docker)
 	6380,  // Redis (TLS/SSL)
-	63800, // Redis (TLS/SSL, Docker)
 	5672,  // RabbitMQ
 	27017, // MongoDB
 	27018, // MongoDB
@@ -71,9 +70,9 @@ func main() {
 		logger.Error("❗ Can't read service names")
 	}
 
-	logger.Debug("🚩 Port scanning started")
+	logger.Debug("🚀 Port scanning started")
 	scanPorts(addresses, output, workerLimit, timeout, ports, services)
-	logger.Debug("🏁 Finished!")
+	logger.Debug("🎉 Finished!")
 }
 
 func parseFlags() (string, string, string, int, time.Duration, []int) {
@@ -139,7 +138,7 @@ func getOutputFile(outputFile string) *os.File {
 	return output
 }
 
-func scanPort(endpoint Endpoint, results chan Endpoint, timeout time.Duration) {
+func scanPort(endpoint Endpoint, output *os.File, timeout time.Duration, services map[int]string, mut *sync.Mutex) {
 	address := fmt.Sprintf("%s:%d", endpoint.Addr, endpoint.Port)
 	conn, err := net.DialTimeout("tcp", address, timeout)
 	if err != nil {
@@ -148,8 +147,14 @@ func scanPort(endpoint Endpoint, results chan Endpoint, timeout time.Duration) {
 	}
 	defer conn.Close()
 
-	logger.Infof("✅ Port %s is open", address)
-	results <- endpoint
+	logger.Debugf("✅ Port %s is open", address)
+	mut.Lock()
+	name, ok := services[endpoint.Port]
+	if !ok {
+		name = "unknown"
+	}
+	fmt.Fprintf(output, "%s %d (%s)\n", endpoint.Addr, endpoint.Port, name)
+	mut.Unlock()
 }
 
 func expandIPRange(ipRange string) []string {
@@ -185,33 +190,23 @@ func inc(ip net.IP) {
 
 func scanPorts(addresses []string, output *os.File, workerLimit int, timeout time.Duration, ports []int, services map[int]string) {
 	endpoints := make(chan Endpoint)
-	results := make(chan Endpoint)
 	var wg sync.WaitGroup
+	var mut sync.Mutex
 
 	for i := 1; i <= workerLimit; i++ {
 		wg.Add(1)
-		logger.Debugf("🚀 Starting worker #%d", i)
 		go func(id int) {
 			defer func() {
-				logger.Debugf("🎉 Worker #%d finished", id)
+				logger.Debugf("Worker #%d finished", id)
 				wg.Done()
 			}()
+			logger.Debugf("Starting worker #%d", id)
 			for endpoint := range endpoints {
 				logger.Debugf("Worker #%d scanning port for %s:%d", id, endpoint.Addr, endpoint.Port)
-				scanPort(endpoint, results, timeout)
+				scanPort(endpoint, output, timeout, services, &mut)
 			}
 		}(i)
 	}
-
-	go func() {
-		for result := range results {
-			name, ok := services[result.Port]
-			if !ok {
-				name = "unknown"
-			}
-			fmt.Fprintf(output, "%s %d (%s)\n", result.Addr, result.Port, name)
-		}
-	}()
 
 	for _, address := range addresses {
 		for _, endpoint := range generateEndpoints(address, ports) {
@@ -221,7 +216,6 @@ func scanPorts(addresses []string, output *os.File, workerLimit int, timeout tim
 
 	close(endpoints)
 	wg.Wait()
-	close(results)
 }
 
 func generateEndpoints(address string, ports []int) []Endpoint {

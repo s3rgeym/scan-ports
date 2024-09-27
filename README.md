@@ -9,17 +9,12 @@ This tool scans a list of targets (IP addresses or domain names) for open ports.
 ```bash
 ~/workspace/scan-ports
 ❯ echo 'example.com' | go run main.go -p -10000
-INFO[2024-09-27T03:36:31+03:00] ✅ Port example.com:22 is open
+
 example.com 22 (ssh)
-INFO[2024-09-27T03:36:31+03:00] ✅ Port example.com:25 is open
 example.com 25 (smtp)
-INFO[2024-09-27T03:36:32+03:00] ✅ Port example.com:80 is open
 example.com 80 (http)
-INFO[2024-09-27T03:36:32+03:00] ✅ Port example.com:443 is open
 example.com 443 (https)
-INFO[2024-09-27T03:36:33+03:00] ✅ Port example.com:2222 is open
 example.com 2222 (EtherNet-IP-1)
-INFO[2024-09-27T03:36:37+03:00] ✅ Port example.com:9081 is open
 example.com 9081 (cisco-aqos)
 
 ~/workspace/scan-ports   7s
